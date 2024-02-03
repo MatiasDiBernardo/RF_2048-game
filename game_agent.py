@@ -8,6 +8,13 @@ class Game_2048():
         self.state = self.set_initial_state()
         self.score = 2
         self.max_val = 2
+        self.iterations = 0
+    
+    def reset(self):
+        self.state = self.set_initial_state()
+        self.score = 2
+        self.max_val = 2
+        self.iterations += 1
     
     def set_initial_state(self):
         state = np.zeros((4, 4))
@@ -156,14 +163,20 @@ class Game_2048():
         return 0
     
     def play_step(self, move):
-        if move is None:
-            return 0, 0, False
 
         self.update_state(move)
         self.create_random_block()
         self.score = np.sum(self.state)
         game_over = self.loss_game_condition()
         reward = self.calculate_reward(game_over)
+
+        # If the agent loss the game resets
+        if game_over:
+            self.reset()
+        
+        # If the agent wins the game resets
+        if self.max_val == 2048:
+            self.reset()
 
         return self.state, reward, game_over
 
@@ -220,57 +233,3 @@ class Game_GUI:
                     label_surface = self.font.render(str(int(val)), True, (255, 255, 255))
                     self.win.blit(label_surface, (y + 5, x + 15))
     
-if __name__ == '__main__':
-
-    WIDTH = 310
-    HEIGTH = 400
-    pygame.init()
-
-    WIN = pygame.display.set_mode((WIDTH, HEIGTH))
-    font = pygame.font.SysFont('arial', 25)
-
-    game_gui = Game_GUI(WIN, font)
-    game_logic = Game_2048()
-    state = game_logic.state
-
-    while True:
-
-        game_over = False
-        move = None
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT:
-                    move = [1, 0, 0, 0]
-
-                if event.key == pygame.K_RIGHT:
-                    move = [0, 1, 0, 0]
-
-                if event.key == pygame.K_UP:
-                    move = [0, 0, 1, 0]
-
-                if event.key == pygame.K_DOWN:
-                    move = [0, 0, 0, 1]
-
-                state, reward, game_over = game_logic.play_step(move)
-        
-                WIN.fill((0, 0, 0))
-                game_gui.draw_score(game_logic.score)
-                game_gui.draw_blocks(state)
-
-        WIN.fill((0, 0, 0))
-        game_gui.draw_score(game_logic.score)
-        game_gui.draw_blocks(state)
-
-        pygame.display.update()
-
-        if game_over:
-            print("Prediste")
-            break
-
-        if game_logic.max_val == 2048:
-            print("Ganaste")
-            break
