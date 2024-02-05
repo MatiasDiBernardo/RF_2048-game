@@ -8,6 +8,7 @@ class Game_2048():
         self.state = self.set_initial_state()
         self.score = 2
         self.max_val = 2
+        self.max_score = 2
         self.iterations = 0
     
     def reset(self):
@@ -118,7 +119,7 @@ class Game_2048():
                 value = self.state[i, j]
                 if value != 0:
                     self.update_squares(j, i, direction, value)
-    
+
     def create_random_block(self):
         avaliable_indices = np.argwhere(self.state == 0)
         index_crate_random = avaliable_indices[random.randint(0, len(avaliable_indices) - 1)]
@@ -130,17 +131,20 @@ class Game_2048():
         # If the table is full 
         if np.all(self.state != 0):
             game_over = True
-            movements = [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
-            for mov in movements:
-                old_state = np.copy(self.state)
-                self.update_state(mov)
-                # If a possible move exists the game continues
-                if np.all(old_state != self.state):
-                    game_over = False
+            # # Aca tendría que chequear si hay algún movimiento posible en este estado.
+            # for j in range(self.state.shape[0]):
+            #     for i in range(self.state.shape[1]):
+            #         # Si los de alrededor no tienen el mismo valor en ningún caso entonces es game over
         
         return game_over
     
-    def calculate_reward(self, game_over):
+    def ammount_of_blocks_increse(self, old_state):
+        num_old_state = np.count_nonzero(old_state)
+        num_new_state = np.count_nonzero(self.state)
+
+        return num_new_state < num_old_state
+    
+    def calculate_reward(self, game_over, old_state):
         """It's rewarded when reaches a new max value
         on the table.
 
@@ -150,25 +154,38 @@ class Game_2048():
         Returns:
             int: Reward value. (+10 if good, -10 if bad, 0 if neutral)
         """
+        if game_over and self.score < 100:
+            return -15
+        
         if game_over:
             return -10
 
         index_max = np.unravel_index(self.state.argmax(), self.state.shape)
         max_val_actual = self.state[index_max] 
 
+        positive_reward = 0
+
         if max_val_actual > self.max_val:
             self.max_val = max_val_actual
-            return 10
+            positive_reward += 10
         
-        return 0
+        if self.ammount_of_blocks_increse(old_state):
+            positive_reward += 5
+        
+        if self.score * 2 > self.max_score:
+            self.max_score = self.score
+            positive_reward += 2
+        
+        return positive_reward
     
     def play_step(self, move):
 
+        old_state = np.copy(self.state)
         self.update_state(move)
         self.create_random_block()
         self.score = np.sum(self.state)
         game_over = self.loss_game_condition()
-        reward = self.calculate_reward(game_over)
+        reward = self.calculate_reward(game_over, old_state)
 
         # If the agent loss the game resets
         if game_over:
@@ -178,13 +195,19 @@ class Game_2048():
         if self.max_val == 2048:
             self.reset()
 
-        return self.state, reward, game_over
+        return self.score, reward, game_over
 
 class Game_GUI:
-    def __init__(self, win, font):
+    def __init__(self):
+        WIDTH = 310
+        HEIGTH = 400
 
-        self.win = win
-        self.font = font
+        pygame.init()
+
+        self.win = pygame.display.set_mode((WIDTH, HEIGTH))
+        self.font = pygame.font.SysFont('arial', 25)
+        self.clock = pygame.time.Clock()
+        self.speed_index = 2
         self.block_width = 60
         self.dim_table = 4
         self.positions_in_pixels = self.index_to_pixel()
@@ -232,4 +255,25 @@ class Game_GUI:
                 if int(val) != 0:
                     label_surface = self.font.render(str(int(val)), True, (255, 255, 255))
                     self.win.blit(label_surface, (y + 5, x + 15))
+
+    def change_speed(self):
+        speed_values = [5, 10, 300]
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    self.speed_index += 1
+
+        return speed_values[self.speed_index % 3]
+        
+    def render(self, state, score):
+        self.win.fill((0, 0, 0))
+        self.draw_score(score)
+        self.draw_blocks(state)
+        pygame.display.update()
+        self.clock.tick(self.change_speed())
+
     
