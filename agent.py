@@ -53,7 +53,7 @@ class Agent():
         Returns:
             _type_: _description_
         """
-        games_of_exporation = 150
+        games_of_exporation = 80
         self.epsilon = games_of_exporation - self.game.iterations
         final_move = np.zeros(4)
 

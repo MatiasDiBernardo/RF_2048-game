@@ -123,13 +123,15 @@ class Game_2048():
         # If the table is full 
         if np.all(self.state != 0):
             game_over = True
-            movements = [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
-            for mov in movements:
-                old_state = np.copy(self.state)
-                self.update_state(mov)
-                # If a possible move exists the game continues
-                if np.all(old_state != self.state):
-                    game_over = False
+            # # Aca tendría que chequear si hay algún movimiento posible en este estado.
+            n =  self.state.shape[0]
+            for i in range(n - 1):
+                for j in range(n - 1):
+                    value = self.state[i, j]
+                    value_right = self.state[i, j + 1]
+                    value_down = self.state[i + 1, j]
+                    if value == value_right or value == value_down:
+                        game_over = False
         
         return game_over
     

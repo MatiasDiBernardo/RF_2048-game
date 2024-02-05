@@ -9,6 +9,7 @@ class Game_2048():
         self.score = 2
         self.max_val = 2
         self.max_score = 2
+        self.full_board_movements = 0
         self.iterations = 0
     
     def reset(self):
@@ -122,8 +123,11 @@ class Game_2048():
 
     def create_random_block(self):
         avaliable_indices = np.argwhere(self.state == 0)
-        index_crate_random = avaliable_indices[random.randint(0, len(avaliable_indices) - 1)]
-        self.state[index_crate_random[0], index_crate_random[1]] = 2
+
+        # If there are avaliable indices
+        if avaliable_indices.shape[0] != 0:
+            index_crate_random = avaliable_indices[random.randint(0, len(avaliable_indices) - 1)]
+            self.state[index_crate_random[0], index_crate_random[1]] = 2
     
     def loss_game_condition(self):
         game_over = False
@@ -132,9 +136,14 @@ class Game_2048():
         if np.all(self.state != 0):
             game_over = True
             # # Aca tendría que chequear si hay algún movimiento posible en este estado.
-            # for j in range(self.state.shape[0]):
-            #     for i in range(self.state.shape[1]):
-            #         # Si los de alrededor no tienen el mismo valor en ningún caso entonces es game over
+            n =  self.state.shape[0]
+            for i in range(n - 1):
+                for j in range(n - 1):
+                    value = self.state[i, j]
+                    value_right = self.state[i, j + 1]
+                    value_down = self.state[i + 1, j]
+                    if value == value_right or value == value_down:
+                        game_over = False
         
         return game_over
     
@@ -159,7 +168,16 @@ class Game_2048():
         
         if game_over:
             return -10
-
+        
+        # Needs to be  debug
+        if (np.count_nonzero(self.state) == 0):
+            self.full_board_movements += 1
+        else:
+            self.full_board_movements = 0
+        
+        if self.full_board_movements > 5:
+            return -15
+        
         index_max = np.unravel_index(self.state.argmax(), self.state.shape)
         max_val_actual = self.state[index_max] 
 
@@ -185,6 +203,11 @@ class Game_2048():
         self.create_random_block()
         self.score = np.sum(self.state)
         game_over = self.loss_game_condition()
+
+        # To avoid getting stuck with a full board
+        if self.full_board_movements > 10:
+            game_over = True
+
         reward = self.calculate_reward(game_over, old_state)
 
         # If the agent loss the game resets
@@ -192,8 +215,8 @@ class Game_2048():
             self.reset()
         
         # If the agent wins the game resets
-        if self.max_val == 2048:
-            self.reset()
+        # if self.max_val == 2048:
+        #     self.reset()
 
         return self.score, reward, game_over
 
