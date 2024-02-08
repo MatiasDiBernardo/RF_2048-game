@@ -148,6 +148,7 @@ class Game_2048():
         return game_over
     
     def ammount_of_blocks_increse(self, old_state):
+        # Compares the ammount of black between two states
         num_old_state = np.count_nonzero(old_state)
         num_new_state = np.count_nonzero(self.state)
 
@@ -169,14 +170,6 @@ class Game_2048():
         if game_over:
             return -10
         
-        # Needs to be  debug
-        if (np.count_nonzero(self.state) == 0):
-            self.full_board_movements += 1
-        else:
-            self.full_board_movements = 0
-        
-        if self.full_board_movements > 5:
-            return -15
         
         index_max = np.unravel_index(self.state.argmax(), self.state.shape)
         max_val_actual = self.state[index_max] 
@@ -196,6 +189,19 @@ class Game_2048():
         
         return positive_reward
     
+    def avoid_getting_stuck(self, game_over):
+
+        treshold_movements = 5
+        if (np.count_nonzero(self.state) == 16):
+            self.full_board_movements += 1
+        else:
+            self.full_board_movements = 0
+        
+        if self.full_board_movements > treshold_movements:
+            return True
+        
+        return game_over
+    
     def play_step(self, move):
 
         old_state = np.copy(self.state)
@@ -203,10 +209,7 @@ class Game_2048():
         self.create_random_block()
         self.score = np.sum(self.state)
         game_over = self.loss_game_condition()
-
-        # To avoid getting stuck with a full board
-        if self.full_board_movements > 10:
-            game_over = True
+        game_over = self.avoid_getting_stuck(game_over)
 
         reward = self.calculate_reward(game_over, old_state)
 

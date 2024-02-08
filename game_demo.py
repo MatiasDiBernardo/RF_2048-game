@@ -10,6 +10,7 @@ class Game_2048():
         self.state = self.set_initial_state()
         self.score = 2
         self.max_val = 2
+        self.full_board_movements = 0
     
     def set_initial_state(self):
         state = np.zeros((4, 4))
@@ -116,8 +117,11 @@ class Game_2048():
     
     def create_random_block(self):
         avaliable_indices = np.argwhere(self.state == 0)
-        index_crate_random = avaliable_indices[random.randint(0, len(avaliable_indices) - 1)]
-        self.state[index_crate_random[0], index_crate_random[1]] = 2
+
+        # If there are avaliable indices
+        if avaliable_indices.shape[0] != 0:
+            index_crate_random = avaliable_indices[random.randint(0, len(avaliable_indices) - 1)]
+            self.state[index_crate_random[0], index_crate_random[1]] = 2
     
     def loss_game_condition(self):
         game_over = False
@@ -158,6 +162,19 @@ class Game_2048():
             return 10
         
         return 0
+
+    def avoid_getting_stuck(self, game_over):
+
+        # Needs to be  debug
+        if (np.count_nonzero(self.state) == 16):
+            self.full_board_movements += 1
+        else:
+            self.full_board_movements = 0
+        
+        if self.full_board_movements > 5:
+            return True
+        
+        return game_over
     
     def play_step(self, move):
         if move is None:
@@ -167,6 +184,7 @@ class Game_2048():
         self.create_random_block()
         self.score = np.sum(self.state)
         game_over = self.loss_game_condition()
+        game_over = self.avoid_getting_stuck(game_over)
         reward = self.calculate_reward(game_over)
 
         return self.state, reward, game_over

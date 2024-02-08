@@ -5,7 +5,7 @@ from collections import deque
 
 from game_agent import Game_2048, Game_GUI
 from model import Linear_QNet, QTrainer
-from graph import plot
+#from graph import plot
 
 MAX_MEMORY = 100_000
 BATCH_SIZE = 1000
