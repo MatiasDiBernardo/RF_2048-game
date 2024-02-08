@@ -3,6 +3,8 @@ import numpy as np
 import sys
 import random
 
+# Test
+
 class Game_2048():
     def __init__(self):
         self.state = self.set_initial_state()
