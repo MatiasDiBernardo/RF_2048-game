@@ -93,7 +93,7 @@ def train():
     
 
     game = Game_2048()
-    gui = Game_GUI()
+    #gui = Game_GUI()
     agent = Agent(game)
 
     while True:
@@ -117,8 +117,9 @@ def train():
         agent.remember(state_old, pred_move, reward, state_new, game_over)
 
         total_reward += reward
+
         # Visualize the game progress
-        gui.render(game.state, game.score)
+        #gui.render(game.state, game.score)
 
         if game_over:
             # train long memory, plot result
@@ -128,7 +129,9 @@ def train():
                 record = old_score
                 agent.model.save()
             mean_score = total_score / game.iterations
-            print('Game: ', game.iterations, '| Score: ', int(old_score), '| Record:', int(record), '| Mean score: ', int(mean_score),  '| Reward: ', total_reward)
+
+            if game.iterations % 100 == 0:
+                print('Game: ', game.iterations, '| Score: ', int(old_score), '| Record:', int(record), '| Mean score: ', int(mean_score),  '| Reward: ', total_reward)
 
             total_score += old_score
             total_reward = 0
