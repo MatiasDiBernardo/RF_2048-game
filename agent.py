@@ -91,10 +91,13 @@ def train():
     record = 0
     score = 0
     
-
     game = Game_2048()
-    #gui = Game_GUI()
+    gui = Game_GUI()
     agent = Agent(game)
+
+    # Start from pretrained
+    checkpoint = torch.load("models/Record_1350.pth")
+    agent.model.load_state_dict(checkpoint)
 
     while True:
         # Get a numerical representation of the state of the game
@@ -119,7 +122,7 @@ def train():
         total_reward += reward
 
         # Visualize the game progress
-        #gui.render(game.state, game.score)
+        gui.render(game.state, game.score)
 
         if game_over:
             # train long memory, plot result
@@ -144,4 +147,3 @@ def train():
 
 if __name__ == '__main__':
     train()
-
