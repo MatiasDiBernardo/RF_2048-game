@@ -8,7 +8,7 @@ class Game_2048():
         self.state = self.set_initial_state()
         self.score = 2
         self.max_val = 2
-        self.max_score = 2
+        self.max_score = 50
         self.full_board_movements = 0
         self.iterations = 0
     
@@ -148,7 +148,7 @@ class Game_2048():
         return game_over
     
     def ammount_of_blocks_increse(self, old_state):
-        # Compares the ammount of black between two states
+        # Compares the ammount of blocks between two states
         num_old_state = np.count_nonzero(old_state)
         num_new_state = np.count_nonzero(self.state)
 
@@ -175,19 +175,21 @@ class Game_2048():
 
         positive_reward = 0
 
-        if max_val_actual > self.max_val:
+        top_row_empty = (np.sum(self.state[0, :]) == 0) or (np.sum(self.state[0, :]) == 2)
+
+        if max_val_actual > self.max_val and top_row_empty:
             self.max_val = max_val_actual
             positive_reward += 10
        
-        if np.all(self.state[0, :]) == 0:
-            positive_reward -= 3
+        # if np.all(self.state[0, :]) == 0:
+        #     positive_reward += 3
             
-        if self.ammount_of_blocks_increse(old_state):
-            positive_reward += 3
+        # if self.ammount_of_blocks_increse(old_state):
+        #     positive_reward += 3
         
-        if self.score * 1.2 > self.max_score:
-            self.max_score = self.score
-            positive_reward += 1
+        if self.score > self.max_score and top_row_empty:
+            self.max_score = self.max_score * 1.2
+            positive_reward += 3
         
         return positive_reward
     

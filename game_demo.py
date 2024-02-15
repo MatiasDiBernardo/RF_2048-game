@@ -10,6 +10,7 @@ class Game_2048():
         self.state = self.set_initial_state()
         self.score = 2
         self.max_val = 2
+        self.max_score = 50
         self.full_board_movements = 0
     
     def set_initial_state(self):
@@ -157,11 +158,25 @@ class Game_2048():
         index_max = np.unravel_index(self.state.argmax(), self.state.shape)
         max_val_actual = self.state[index_max] 
 
-        if max_val_actual > self.max_val:
+        positive_reward = 0
+
+        top_row_empty = (np.sum(self.state[0, :]) == 0) or (np.sum(self.state[0, :]) == 2)
+
+        if max_val_actual > self.max_val and top_row_empty:
             self.max_val = max_val_actual
-            return 10
+            positive_reward += 10
+       
+        # if np.all(self.state[0, :]) == 0:
+        #     positive_reward += 3
+            
+        # if self.ammount_of_blocks_increse(old_state):
+        #     positive_reward += 3
         
-        return 0
+        if self.score > self.max_score and top_row_empty:
+            self.max_score = self.max_score * 1.2
+            positive_reward += 3
+        
+        return positive_reward
 
     def avoid_getting_stuck(self, game_over):
 
@@ -278,10 +293,12 @@ if __name__ == '__main__':
                     move = [0, 0, 0, 1]
 
                 state, reward, game_over = game_logic.play_step(move)
+                print("Reward: ", reward)
         
         WIN.fill((0, 0, 0))
         game_gui.draw_score(game_logic.score)
         game_gui.draw_blocks(state)
+        
 
         pygame.display.update()
 

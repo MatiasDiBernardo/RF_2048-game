@@ -53,7 +53,7 @@ class Agent():
         Returns:
             _type_: _description_
         """
-        games_of_exporation = 80
+        games_of_exporation = 120
         self.epsilon = games_of_exporation - self.game.iterations
         final_move = np.zeros(4)
 
@@ -96,8 +96,8 @@ def train():
     agent = Agent(game)
 
     # Start from pretrained
-    checkpoint = torch.load("models/Record_1350.pth")
-    agent.model.load_state_dict(checkpoint)
+    # checkpoint = torch.load("models/Record_1350.pth")
+    # agent.model.load_state_dict(checkpoint)
 
     while True:
         # Get a numerical representation of the state of the game
@@ -133,8 +133,8 @@ def train():
                 agent.model.save()
             mean_score = total_score / game.iterations
 
-            if game.iterations % 100 == 0:
-                print('Game: ', game.iterations, '| Score: ', int(old_score), '| Record:', int(record), '| Mean score: ', int(mean_score),  '| Reward: ', total_reward)
+            # if game.iterations % 100 == 0:
+            print('Game: ', game.iterations, '| Score: ', int(old_score), '| Record:', int(record), '| Mean score: ', int(mean_score),  '| Reward: ', total_reward)
 
             total_score += old_score
             total_reward = 0
