@@ -7,8 +7,8 @@ from game_agent import Game_2048, Game_GUI
 from model import Linear_QNet, QTrainer
 #from graph import plot
 
-MAX_MEMORY = 100_000
-BATCH_SIZE = 1000
+MAX_MEMORY = 500_000
+BATCH_SIZE = 5000
 LR = 0.001
 
 class Agent():
@@ -22,16 +22,15 @@ class Agent():
         self.memory = deque(maxlen=MAX_MEMORY) # popleft() when memory reaches max
 
         # Models
-        # Agregar una capita para bajar esa data a 256 y depués a 4
-        self.model = Linear_QNet(256, 1024, 4)
+        self.model = Linear_QNet(256, 512, 4)
         self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
 
     def game_state(self, state):
-        # Encode all the values in binary up to 2^16.
+        # Encode all the values in binary up to 2^11 == 2048. O usar 2^16 == 65536 for 256 input vector.
 
-        # Eso lo puedo pasar todo junto que sería 16*4*4 o paso a la red arrays de 16 arrays de 16
+        # Eso lo puedo pasar todo junto que sería 11*4*4 o paso a la red 16 arrays de dimension 11 (valores de 2 a 1024)
         # Aca puedo agregar info en función de como este el estado para pasar a la red
-        # Por ahora solo paso matriz de 4x4 del tablero a array de 16 valores.
+        # Por ahora solo paso matriz de 4x4 del tablero a vector de 11x4x4 = 176.
         encoded_vals = np.array([])
         for i in range(state.shape[0]):
             for j in range(state.shape[1]):
@@ -53,7 +52,7 @@ class Agent():
         Returns:
             _type_: _description_
         """
-        games_of_exporation = 120
+        games_of_exporation = 80
         self.epsilon = games_of_exporation - self.game.iterations
         final_move = np.zeros(4)
 
@@ -96,7 +95,7 @@ def train():
     agent = Agent(game)
 
     # Start from pretrained
-    # checkpoint = torch.load("models/Record_1350.pth")
+    # checkpoint = torch.load("models/Record_1158_small_layer.pth")
     # agent.model.load_state_dict(checkpoint)
 
     while True:

@@ -141,8 +141,15 @@ class Game_2048():
                         game_over = False
         
         return game_over
+
+    def ammount_of_blocks_increse(self, old_state):
+        # Compares the ammount of blocks between two states
+        num_old_state = np.count_nonzero(old_state)
+        num_new_state = np.count_nonzero(self.state)
+
+        return num_new_state < num_old_state
     
-    def calculate_reward(self, game_over):
+    def calculate_reward(self, game_over, old_state):
         """It's rewarded when reaches a new max value
         on the table.
 
@@ -155,26 +162,30 @@ class Game_2048():
         if game_over:
             return -10
 
+
+        if  (np.sum(self.state[0, :]) >= 6):
+            return -5
+        
         index_max = np.unravel_index(self.state.argmax(), self.state.shape)
         max_val_actual = self.state[index_max] 
 
-        positive_reward = 0
-
         top_row_empty = (np.sum(self.state[0, :]) == 0) or (np.sum(self.state[0, :]) == 2)
 
-        if max_val_actual > self.max_val and top_row_empty:
+        positive_reward = 0
+
+        if max_val_actual > self.max_val:
             self.max_val = max_val_actual
             positive_reward += 10
        
         # if np.all(self.state[0, :]) == 0:
         #     positive_reward += 3
             
-        # if self.ammount_of_blocks_increse(old_state):
-        #     positive_reward += 3
+        if self.ammount_of_blocks_increse(old_state):
+            positive_reward += 10
         
-        if self.score > self.max_score and top_row_empty:
-            self.max_score = self.max_score * 1.2
-            positive_reward += 3
+        # if self.score > self.max_score and top_row_empty:
+        #     self.max_score = self.max_score * 1.2
+        #     positive_reward += 3
         
         return positive_reward
 
@@ -195,12 +206,13 @@ class Game_2048():
         if move is None:
             return 0, 0, False
 
+        old_state = np.copy(self.state)
         self.update_state(move)
         self.create_random_block()
         self.score = np.sum(self.state)
         game_over = self.loss_game_condition()
         game_over = self.avoid_getting_stuck(game_over)
-        reward = self.calculate_reward(game_over)
+        reward = self.calculate_reward(game_over, old_state)
 
         return self.state, reward, game_over
 
