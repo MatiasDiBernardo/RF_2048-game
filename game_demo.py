@@ -180,8 +180,8 @@ class Game_2048():
         # if np.all(self.state[0, :]) == 0:
         #     positive_reward += 3
             
-        if self.ammount_of_blocks_increse(old_state):
-            positive_reward += 10
+        # if self.ammount_of_blocks_increse(old_state):
+        #     positive_reward += 5
         
         # if self.score > self.max_score and top_row_empty:
         #     self.max_score = self.max_score * 1.2

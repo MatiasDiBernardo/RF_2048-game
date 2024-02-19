@@ -170,16 +170,16 @@ class Game_2048():
         if game_over:
             return -10
 
-        if  (np.sum(self.state[0, :]) >= 6):
-            return -5
+        # Penalize poblated top row
+        # if  (np.sum(self.state[0, :]) >= 6):
+        #     return -1
 
-        #top_row_empty = (np.sum(self.state[0, :]) == 0) or (np.sum(self.state[0, :]) == 2)
+        top_row_empty = (np.sum(self.state[0, :]) == 0) or (np.sum(self.state[0, :]) == 2)
 
         index_max = np.unravel_index(self.state.argmax(), self.state.shape)
         max_val_actual = self.state[index_max] 
 
         positive_reward = 0
-
 
         if max_val_actual > self.max_val: 
             self.max_val = max_val_actual
@@ -188,11 +188,11 @@ class Game_2048():
         if self.ammount_of_blocks_increse(old_state):
             positive_reward += 5
 
-        # if top_row_empty:
-        #     positive_reward += 3
+        if top_row_empty:
+            positive_reward += 3
             
         if self.score > self.max_score:
-            self.max_score = self.max_score * 1.2
+            self.max_score = self.max_score * 1.4
             positive_reward += 3
         
         return positive_reward

@@ -22,7 +22,7 @@ class Agent():
         self.memory = deque(maxlen=MAX_MEMORY) # popleft() when memory reaches max
 
         # Models
-        self.model = Linear_QNet(256, 512, 4)
+        self.model = Linear_QNet(16, 512, 4)
         self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
 
     def game_state(self, state):
@@ -31,6 +31,7 @@ class Agent():
         # Eso lo puedo pasar todo junto que sería 11*4*4 o paso a la red 16 arrays de dimension 11 (valores de 2 a 1024)
         # Aca puedo agregar info en función de como este el estado para pasar a la red
         # Por ahora solo paso matriz de 4x4 del tablero a vector de 11x4x4 = 176.
+
         encoded_vals = np.array([])
         for i in range(state.shape[0]):
             for j in range(state.shape[1]):
@@ -39,6 +40,18 @@ class Agent():
                     index = np.log2(state[i, j]) - 1
                     val_binary[int(index)] = 1
                 encoded_vals = np.concatenate([encoded_vals, val_binary])
+            
+        # Second option (pass only the 4x4 board as a single array, for relative value simplification log2 is applied)
+        encoded_vals = np.array([])
+        for i in range(state.shape[0]):
+            val_binary = np.zeros(4)
+            for j in range(state.shape[1]):
+                if state[i, j] != 0:
+                    val_binary[j] = int(np.log2(state[i, j]))
+                else:
+                    val_binary[j] = 0
+
+            encoded_vals = np.concatenate([encoded_vals, val_binary])
         
         return encoded_vals # astype('int32')
     
@@ -52,7 +65,7 @@ class Agent():
         Returns:
             _type_: _description_
         """
-        games_of_exporation = 80
+        games_of_exporation = 150
         self.epsilon = games_of_exporation - self.game.iterations
         final_move = np.zeros(4)
 
@@ -121,7 +134,7 @@ def train():
         total_reward += reward
 
         # Visualize the game progress
-        gui.render(game.state, game.score)
+        #gui.render(game.state, game.score)
 
         if game_over:
             # train long memory, plot result
@@ -132,8 +145,8 @@ def train():
                 agent.model.save()
             mean_score = total_score / game.iterations
 
-            # if game.iterations % 100 == 0:
-            print('Game: ', game.iterations, '| Score: ', int(old_score), '| Record:', int(record), '| Mean score: ', int(mean_score),  '| Reward: ', total_reward)
+            if game.iterations % 100 == 0:
+                print('Game: ', game.iterations, '| Score: ', int(old_score), '| Record:', int(record), '| Mean score: ', int(mean_score),  '| Reward: ', total_reward)
 
             total_score += old_score
             total_reward = 0

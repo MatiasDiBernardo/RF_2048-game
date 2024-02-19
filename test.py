@@ -10,7 +10,7 @@ def test():
     agent = Agent(game)
 
     # Start from pretrained
-    checkpoint = torch.load("models/Record_1158_small_layer.pth")
+    checkpoint = torch.load("models/Record_512_low_dim_rep.pth")
     agent.model.load_state_dict(checkpoint)
 
     while True:
