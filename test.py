@@ -3,6 +3,10 @@ from agent import Agent
 import torch
 
 def test():
+    """
+    Functionality for testing the models outside of training. 
+
+    """
     total_score = 0
     
     game = Game_2048()
@@ -10,7 +14,8 @@ def test():
     agent = Agent(game)
 
     # Start from pretrained
-    checkpoint = torch.load("models/Record_512_low_dim_rep.pth")
+    model_path = "models/Record_1430.pth"
+    checkpoint = torch.load(model_path)
     agent.model.load_state_dict(checkpoint)
 
     while True:

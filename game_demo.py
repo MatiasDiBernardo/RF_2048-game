@@ -6,6 +6,9 @@ import random
 # Test
 
 class Game_2048():
+    """
+    Base clase used to test the game. The game is set to be played with arrows key.
+    """
     def __init__(self):
         self.state = self.set_initial_state()
         self.score = 2
@@ -269,6 +272,7 @@ class Game_GUI:
                     label_surface = self.font.render(str(int(val)), True, (255, 255, 255))
                     self.win.blit(label_surface, (y + 5, x + 15))
     
+
 if __name__ == '__main__':
 
     WIDTH = 310
