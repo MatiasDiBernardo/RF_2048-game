@@ -4,18 +4,21 @@ import sys
 import random
 
 class Game_2048():
+    """
+    Logic of the game. For the agent.
+    """
     def __init__(self):
         self.state = self.set_initial_state()
         self.score = 2
         self.max_val = 2
-        self.max_score = 50
+        self.max_score = 50  # Set to 50 to avoid early reward.
         self.full_board_movements = 0
         self.iterations = 0
     
     def reset(self):
         self.state = self.set_initial_state()
         self.score = 2
-        self.max_val = 2
+        self.max_val = 50
         self.iterations += 1
     
     def set_initial_state(self):
@@ -135,13 +138,15 @@ class Game_2048():
         # If the table is full 
         if np.all(self.state != 0):
             game_over = True
-            # # Aca tendría que chequear si hay algún movimiento posible en este estado.
+            # Check for possible moves
             n =  self.state.shape[0]
             for i in range(n - 1):
                 for j in range(n - 1):
                     value = self.state[i, j]
                     value_right = self.state[i, j + 1]
                     value_down = self.state[i + 1, j]
+
+                    # If a possible move exist then keeps playing
                     if value == value_right or value == value_down:
                         game_over = False
         
@@ -164,13 +169,14 @@ class Game_2048():
         Returns:
             int: Reward value. (+10 if good, -10 if bad, 0 if neutral)
         """
+        # Penalty for ended game
         if game_over and self.score < 100:
             return -15
         
         if game_over:
             return -10
 
-        # Penalize poblated top row
+        # Penalty for poblated top row
         # if  (np.sum(self.state[0, :]) >= 6):
         #     return -1
 
@@ -198,8 +204,19 @@ class Game_2048():
         return positive_reward
     
     def avoid_getting_stuck(self, game_over):
+        """The agent was getting stuck when reaches the full board cover
+        and not doing the move that allowes the game to keep playing.
+        This function solution this issue setting game over to true if
+        this situation happens.
 
-        treshold_movements = 5
+        Args:
+            game_over (boolean): If the game ended or not.
+
+        Returns:
+            boolean: game_over
+        """
+
+        treshold_movements = 5  # Ammount of stuck movements that are allowed
         if (np.count_nonzero(self.state) == 16):
             self.full_board_movements += 1
         else:
@@ -226,12 +243,15 @@ class Game_2048():
             self.reset()
         
         # If the agent wins the game resets
-        # if self.max_val == 2048:
-        #     self.reset()
+        if self.max_val == 2048:
+            self.reset()
 
         return self.score, reward, game_over
 
 class Game_GUI:
+    """
+    Visual implementation of the game.
+    """
     def __init__(self):
         WIDTH = 310
         HEIGTH = 400
@@ -241,7 +261,7 @@ class Game_GUI:
         self.win = pygame.display.set_mode((WIDTH, HEIGTH))
         self.font = pygame.font.SysFont('arial', 25)
         self.clock = pygame.time.Clock()
-        self.speed_index = 2
+        self.speed_index = 2  # Three postions of speed (slow, medium, fast)
         self.block_width = 60
         self.dim_table = 4
         self.positions_in_pixels = self.index_to_pixel()
@@ -309,5 +329,3 @@ class Game_GUI:
         self.draw_blocks(state)
         pygame.display.update()
         self.clock.tick(self.change_speed())
-
-    

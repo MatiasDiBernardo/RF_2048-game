@@ -5,7 +5,6 @@ from collections import deque
 
 from game_agent import Game_2048, Game_GUI
 from model import Linear_QNet, QTrainer
-#from graph import plot
 
 MAX_MEMORY = 500_000
 BATCH_SIZE = 5000
@@ -22,7 +21,7 @@ class Agent():
         self.memory = deque(maxlen=MAX_MEMORY) # popleft() when memory reaches max
 
         # Models
-        self.model = Linear_QNet(16, 512, 4)
+        self.model = Linear_QNet(256, 1024, 4)
         self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
 
     def game_state(self, state):
@@ -42,16 +41,17 @@ class Agent():
                 encoded_vals = np.concatenate([encoded_vals, val_binary])
             
         # Second option (pass only the 4x4 board as a single array, for relative value simplification log2 is applied)
-        encoded_vals = np.array([])
-        for i in range(state.shape[0]):
-            val_binary = np.zeros(4)
-            for j in range(state.shape[1]):
-                if state[i, j] != 0:
-                    val_binary[j] = int(np.log2(state[i, j]))
-                else:
-                    val_binary[j] = 0
 
-            encoded_vals = np.concatenate([encoded_vals, val_binary])
+        # encoded_vals = np.array([])
+        # for i in range(state.shape[0]):
+        #     val_binary = np.zeros(4)
+        #     for j in range(state.shape[1]):
+        #         if state[i, j] != 0:
+        #             val_binary[j] = int(np.log2(state[i, j]))
+        #         else:
+        #             val_binary[j] = 0
+
+        #     encoded_vals = np.concatenate([encoded_vals, val_binary])
         
         return encoded_vals # astype('int32')
     
@@ -96,8 +96,6 @@ class Agent():
         self.trainer.train_step(state, action, reward, next_state, done)
 
 def train():
-    plot_scores = []
-    plot_mean_scores = []
     total_score = 0
     total_reward = 0
     record = 0
@@ -108,7 +106,7 @@ def train():
     agent = Agent(game)
 
     # Start from pretrained
-    # checkpoint = torch.load("models/Record_1158_small_layer.pth")
+    # checkpoint = torch.load("models/Record_1158.pth")
     # agent.model.load_state_dict(checkpoint)
 
     while True:
@@ -134,15 +132,17 @@ def train():
         total_reward += reward
 
         # Visualize the game progress
-        #gui.render(game.state, game.score)
+        gui.render(game.state, game.score)
 
         if game_over:
             # train long memory, plot result
             agent.train_long_memory()
 
+            # Save the model when reaches a new record
             if old_score > record:
                 record = old_score
                 agent.model.save()
+
             mean_score = total_score / game.iterations
 
             if game.iterations % 100 == 0:
@@ -150,12 +150,6 @@ def train():
 
             total_score += old_score
             total_reward = 0
-
-            # plot_scores.append(old_score)
-            # total_score += old_score
-            # mean_score = total_score / game.iterations
-            # plot_mean_scores.append(mean_score)
-            # plot(plot_scores, plot_mean_scores)
 
 if __name__ == '__main__':
     train()

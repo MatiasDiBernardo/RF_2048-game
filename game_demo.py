@@ -3,11 +3,9 @@ import numpy as np
 import sys
 import random
 
-# Test
-
 class Game_2048():
     """
-    Base clase used to test the game. The game is set to be played with arrows key.
+    Class with the logic of the game.
     """
     def __init__(self):
         self.state = self.set_initial_state()
@@ -133,13 +131,14 @@ class Game_2048():
         # If the table is full 
         if np.all(self.state != 0):
             game_over = True
-            # # Aca tendría que chequear si hay algún movimiento posible en este estado.
+            # Check for possible moves
             n =  self.state.shape[0]
             for i in range(n - 1):
                 for j in range(n - 1):
                     value = self.state[i, j]
                     value_right = self.state[i, j + 1]
                     value_down = self.state[i + 1, j]
+                    # If a possible move exist then keeps playing
                     if value == value_right or value == value_down:
                         game_over = False
         
@@ -164,7 +163,6 @@ class Game_2048():
         """
         if game_over:
             return -10
-
 
         if  (np.sum(self.state[0, :]) >= 6):
             return -5
@@ -194,7 +192,6 @@ class Game_2048():
 
     def avoid_getting_stuck(self, game_over):
 
-        # Needs to be  debug
         if (np.count_nonzero(self.state) == 16):
             self.full_board_movements += 1
         else:
@@ -220,6 +217,9 @@ class Game_2048():
         return self.state, reward, game_over
 
 class Game_GUI:
+    """
+    Visual representation of the game.
+    """
     def __init__(self, win, font):
 
         self.win = win
@@ -272,9 +272,10 @@ class Game_GUI:
                     label_surface = self.font.render(str(int(val)), True, (255, 255, 255))
                     self.win.blit(label_surface, (y + 5, x + 15))
     
-
-if __name__ == '__main__':
-
+def test_game():
+    """
+    Demo of the game to be played with the keyboard.
+    """
     WIDTH = 310
     HEIGTH = 400
     pygame.init()
@@ -309,7 +310,6 @@ if __name__ == '__main__':
                     move = [0, 0, 0, 1]
 
                 state, reward, game_over = game_logic.play_step(move)
-                print("Reward: ", reward)
         
         WIN.fill((0, 0, 0))
         game_gui.draw_score(game_logic.score)
@@ -319,9 +319,12 @@ if __name__ == '__main__':
         pygame.display.update()
 
         if game_over:
-            print("Prediste")
+            print("Game Over")
             break
 
         if game_logic.max_val == 2048:
-            print("Ganaste")
+            print("You win!!!")
             break
+
+if __name__ == '__main__':
+    test_game()

@@ -5,7 +5,6 @@ import torch
 def test():
     """
     Functionality for testing the models outside of training. 
-
     """
     total_score = 0
     
@@ -14,7 +13,7 @@ def test():
     agent = Agent(game)
 
     # Start from pretrained
-    model_path = "models/Record_1430.pth"
+    model_path = "models/Record_1350.pth"
     checkpoint = torch.load(model_path)
     agent.model.load_state_dict(checkpoint)
 
