@@ -21,7 +21,7 @@ class Agent():
         self.memory = deque(maxlen=MAX_MEMORY) # popleft() when memory reaches max
 
         # Models
-        self.model = Linear_QNet(256, 1024, 4)
+        self.model = Linear_QNet(256, 512, 4)
         self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
 
     def game_state(self, state):
@@ -145,8 +145,8 @@ def train():
 
             mean_score = total_score / game.iterations
 
-            if game.iterations % 100 == 0:
-                print('Game: ', game.iterations, '| Score: ', int(old_score), '| Record:', int(record), '| Mean score: ', int(mean_score),  '| Reward: ', total_reward)
+            # if game.iterations % 100 == 0:
+            print('Game: ', game.iterations, '| Score: ', int(old_score), '| Record:', int(record), '| Mean score: ', int(mean_score),  '| Reward: ', total_reward)
 
             total_score += old_score
             total_reward = 0
