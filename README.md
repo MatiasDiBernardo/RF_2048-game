@@ -8,7 +8,7 @@ The model learns based on Bellmans Equation and Neural Q Value.
 
 I tried different reward functions, but the best one gives rewards when the maximum block value increases and penalization when there are no possible moves. 
 
-The best results for the linear layers where with two  hidden layers of sizes 1024 and 256. The input is a binary input of the board (vector of size 256) and the output is the movement represented by a state binary vector (size 4). All the layers use Relu activation functions. Architecture resume: (256 -> 1024 -> 256 -> 4)
+The best results for the linear layers where with two  hidden layers of sizes 1024 and 256. The input is a binary input of the board (vector of size 256) and the output is the movement represented by a state binary vector (size 4). All the layers use ReLU activation functions. Architecture resume: (256 -> 1024 -> 256 -> 4)
 
 
 ## Results 
